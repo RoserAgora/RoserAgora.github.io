@@ -5,31 +5,33 @@
 body{
     background-color: #ffff00;
 }
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
   
-.svg-container {
+.SVG_Icon {
     width: 27.5%;
     height: 27.5%;
-    animation: spin 3s ease-in-out infinite;
-    fill: aqua;
-    
+    fill: aqua;  
+    z-index: 2;
 }
-.svg-container g {
-    fill:#ff0084;
-    stroke: aqua;
-    cursor: pointer;
 
-}
-/* testing the waters of JQuery again */
 @-webkit-keyframes rotate {
-  to {
-    -webkit-transform: rotate(360deg);
-  }
+    to {
+      -webkit-transform: rotate(90deg);
+    }
 }
+.SVG_Icon.animation{
+    -webkit-animation-name:             rotate;
+    -webkit-animation-duration:         1s;
+    -webkit-animation-iteration-count:  infinite;
+    -webkit-animation-timing-function:  ease;
+}
+.SVG_Icon g {
+    fill:#FF0000;
+    stroke: #000000;
+    stroke-width:2;
+    cursor: pointer;
+}
+
+
 .rotate {
     width: 100px;
     height: 100px;
@@ -37,7 +39,7 @@ body{
 }
 .rotate.anim {
     -webkit-animation-name:             rotate;
-    -webkit-animation-duration:         5s;
+    -webkit-animation-duration:         0.5s;
     -webkit-animation-iteration-count:  infinite;
     -webkit-animation-timing-function:  ease-in-out;
 }
