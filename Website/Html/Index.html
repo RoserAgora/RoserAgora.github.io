@@ -51,13 +51,14 @@
 </head>
 
 <body>
-
-<ul class="ul">
-  <li><a class="active" href="">Home</a></li>
-  <li><a href="">bnr</a></li>
-  <li><a href="MeCore.html">a</a></li>
-</ul>
-
+<!-- Navbar -->
+<nav> 
+  <ul class="ul">
+    <li><a class="active" href="">Home</a></li>
+    li><a href="">bnr</a></li>
+    <li><a href="MeCore.html">a</a></li>
+  </ul>
+</nav>
 
 <img alt="testing" >
   <h1 title="click me :3"><span>rock</span></h1>
@@ -66,7 +67,7 @@
 
 
 <center>
-<svg class="svg-container" viewBox = "0 0 274 274">
+<svg class="SVG_Icon animation" viewBox = "0 0 274 274">
 <g onclick="fadeInAudio();fadeOut(element)"> <!-- using this grouping tag, only the actual elements of the icon is onclickable. -->
   <g fill="#000000" fill-opacity="1.00" stroke="None">
     <path  d="
@@ -164,8 +165,7 @@
 <button onclick="fadeInAudio()">Play Audio</button>
   
 <button id="btn" onclick="introAudio.play();">Music</button>
-<div class="rotate anim">TEST</div>
-<input id="stop" type="submit" value="stop it" />
+
 
 
 
@@ -185,7 +185,25 @@
 
 
 
+<!-- timeout make appear
+CSS
 
+.hidden {
+    display:none;
+}
+HTML
+
+<div id="threeSeconds" class="hidden">Won't show up for 3 seconds</div>
+Javascript
+
+// attach to window.onload
+setTimeout(function(){
+
+    var modifiedClass = document.getElementById('threeSeconds').className.replace(/\bhidden\b/, '');
+    document.getElementById('threeSeconds').className = modifiedClass;
+
+}, 3000);
+-->
 
 
 
