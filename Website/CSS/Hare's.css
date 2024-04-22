@@ -9,7 +9,7 @@ body{
 }
 .SVG_Icon g {
     z-index: 2500;
-    fill:#000000;
+    fill:#0000ff;
     stroke: #000000;
     stroke-width:2;
     cursor: pointer;
