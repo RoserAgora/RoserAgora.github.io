@@ -1,28 +1,3 @@
-<!-- CHECKLISSTTTTTYYY!!!
-4.music 
-5.hyperlink
-6.every html tag
-7.working form?
-8.SOCAILLSSSS
-9.photographjy social
-10.svg mask
-11.amazon like zoom for images
-12.preloader bar, wave under mask
-13Every N5 -> Higher element
-14. Universal dynamic website view.
-15. Complete Commentary
--->
-
-<!--
-  Basic steps for loader
-  1. website load
-  2. while this is happening, background and icon mask to another color
-  3. progress bar fills icon
-  4. once 100%, animation stops and onclick is avaliable
-  5. onclick fades svg into bg and then bg folds.
-  6. this includes music and sound
--->
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -45,20 +20,19 @@
 
   <!-- Title of Website -->
   <title>Roser∀gora</title>
+
+  
 </head>
 
 <body>
 
 <!-- Preloader -->
-<!-- svg z below it, then use copy 
-</svg>
- -->
+<!-- if we clip (remove) all icon images from mathcing bg rectangle, then, it can work-->
 <div id="loader-wrapper">
+  <div id="Pace&Icon"></div>
   <div id="loader">
-  
-  <svg id="mask" class="SVG_Icon animation" viewBox = "0 0 274 274">
-    <g></g> <!-- square that will not animate, will -->
-    <g onclick="fadeInAudio();fadeOut(element)"> <!-- using this grouping tag, only the actual elements of the icon is onclickable. -->
+  <svg class="SVG_Icon animation" viewBox = "0 0 548 548">
+    <g id="gIcon" onclick="fadeInAudio();fadeOut(element)"> <!-- using this grouping tag, only the actual elements of the icon is onclickable. -->
     <g fill="#000000" fill-opacity="1.00" stroke="None">
       <path  d="
       M 124.00 53.00 

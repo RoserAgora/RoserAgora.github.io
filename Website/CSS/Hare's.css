@@ -9,7 +9,7 @@ body{
 }
 .SVG_Icon g {
     z-index: 2500;
-    fill:#0000ff;
+    fill:#000000;
     stroke: #000000;
     stroke-width:2;
     cursor: pointer;
@@ -44,9 +44,11 @@ body{
 @keyframes rotate{
     to {
     transform: rotate(90deg);
+    transform-box: fill-box;
+    transform-origin: center;
     }
 }
-.SVG_Icon.animation{
+.SVG_Icon.animation #gIcon{
     animation-name:             rotate;
     animation-duration:         0.8s;
     animation-iteration-count:  infinite;
