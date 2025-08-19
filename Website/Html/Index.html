@@ -1,0 +1,526 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <!-- Fonts -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Archivo">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Sora">
+  
+  <!-- CSS File Path -->
+  <link rel="stylesheet" href="../CSS/RoserCSS.css">
+  <link rel="stylesheet" href="../CSS/">
+
+  <!-- Javascript File Path-->
+  <script src="../JavaScript/Jquery371.js"></script> <!-- Jquery -->
+  <script src="../JavaScript/PACE.js"></script> <!-- PACE JS -->
+  <script src="../JavaScript/RoserJS.js"></script> <!-- Basic JS -->
+
+  <meta charset="utf-8" />
+
+  
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Roser∀gora - Everything to know!</title>
+<style> </style>
+
+<script>
+  window.paceOptions = {
+    eventLag: false
+  };
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/pace-js@latest/pace.min.js"></script> <!-- PACE JS --> 
+</head>
+<body>
+
+<!--
+  Overlay with two halves and a centered loader wrapper.
+  The loader wrapper contains:
+    1) the main waves SVG (the progress/wave geometry) with a mask,
+    2) the visible flower paths (drawn on top of waves),
+    3) the debug flower SVG (separate, purely for manual visual check).
+-->
+<div class="overlay" id="overlay">
+  <div class="half left-half"></div>
+  <div class="half right-half"></div>
+
+  <div class="loader-wrapper" id="loaderWrapper">
+
+    <!--
+      MAIN waves svg.
+      viewBox chosen large so wave geometry matches the math used
+      in the path generator (leftX=-300 rightX=700 etc).
+      These are the three paths we update from JS.
+      The flower mask is inside the same SVG defs so coordinates match.
+    -->
+    <svg id="loader" class="loader" viewBox="-60 -60 520 520" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" aria-label="Waves with flower mask">
+      <defs>
+        <!-- Flower mask: waves will be visible only inside the white parts.
+             We place the mask paths in the same coordinate space as the visible flower.
+             To center the 0..274 flower in this SVG (whose center is at 200,200),
+             we translate the flower by (200-137=63, 63). Rotation is applied to these groups
+             by JS via setting the transform attribute on both mask group and visible group. -->
+        <mask id="flowerMask">
+          <rect x="-300" y="-300" width="1000" height="1000" fill="black"/>
+          <!-- mask group: translated and rotated by JS (same transform as visible) -->
+          <g id="maskFlowerGroup" transform="translate(63 63)">
+            <g fill="white">
+              <path d="M 124.00 53.00 C 125.62 32.29 112.52 2.48 88.00 1.00 C 61.79 -1.42 44.78 27.52 51.00 51.00 C 27.09 44.63 -2.03 62.38 1.01 88.99 C 3.41 112.87 32.45 125.58 53.00 124.00 C 37.83 120.73 26.96 102.54 33.02 88.02 C 37.76 72.83 57.20 66.81 71.00 71.00 C 66.75 57.00 73.03 36.80 88.93 32.93 C 103.19 27.08 120.79 38.24 124.00 53.00 Z"/>
+              <path d="M 223.00 51.00 C 229.37 27.09 211.62 -2.03 185.01 1.01 C 161.13 3.41 148.42 32.45 150.00 53.00 C 153.27 37.83 171.46 26.96 185.98 33.02 C 201.17 37.76 207.19 57.20 203.00 71.00 C 217.00 66.75 237.20 73.03 241.07 88.93 C 246.92 103.19 235.76 120.79 221.00 124.00 C 241.71 125.62 271.52 112.52 273.00 88.00 C 275.42 61.79 246.48 44.78 223.00 51.00 Z"/>
+              <path d="M 131.00 96.00 C 129.96 81.44 128.30 60.90 111.07 56.93 C 95.14 51.93 80.99 71.42 86.00 86.00 C 70.97 80.86 51.47 95.75 57.02 111.98 C 61.91 128.46 81.62 129.93 96.00 131.00 C 77.39 125.27 89.18 97.02 106.00 106.00 C 97.04 89.19 125.21 77.36 131.00 96.00 Z"/>
+              <path d="M 188.00 86.00 C 193.14 70.97 178.25 51.47 162.02 57.02 C 145.54 61.90 144.07 81.62 143.00 96.00 C 148.73 77.39 176.98 89.18 168.00 106.00 C 184.81 97.04 196.64 125.21 178.00 131.00 C 192.56 129.96 213.10 128.30 217.07 111.07 C 222.07 95.14 202.58 80.99 188.00 86.00 Z"/>
+              <path d="M 135.00 135.00 C 134.27 126.76 137.06 116.86 131.75 110.25 C 127.00 102.62 115.69 109.28 117.00 117.00 C 109.26 115.67 102.63 127.05 110.25 131.75 C 116.93 137.09 126.73 134.26 135.00 135.00 Z"/>
+              <path d="M 157.00 117.00 C 158.33 109.26 146.95 102.63 142.25 110.25 C 136.91 116.93 139.74 126.73 139.00 135.00 C 147.24 134.27 157.14 137.06 163.75 131.75 C 171.38 127.00 164.72 115.69 157.00 117.00 Z"/>
+              <path d="M 135.00 139.00 C 126.76 139.73 116.86 136.94 110.25 142.25 C 102.62 147.00 109.28 158.31 117.00 157.00 C 115.67 164.74 127.05 171.37 131.75 163.75 C 137.09 157.07 134.26 147.27 135.00 139.00 Z"/>
+              <path d="M 157.00 157.00 C 164.74 158.33 171.37 146.95 163.75 142.25 C 157.07 136.91 147.27 139.74 139.00 139.00 C 139.73 147.24 136.94 157.14 142.25 163.75 C 147.00 171.38 158.31 164.72 157.00 157.00 Z"/>
+              <path d="M 96.00 143.00 C 81.44 144.04 60.90 145.70 56.93 162.93 C 51.93 178.86 71.42 193.01 86.00 188.00 C 80.86 203.03 95.75 222.53 111.98 216.98 C 128.46 212.09 129.93 192.38 131.00 178.00 C 125.27 196.61 97.02 184.82 106.00 168.00 C 89.19 176.96 77.36 148.79 96.00 143.00 Z"/>
+              <path d="M 188.00 188.00 C 203.03 193.14 222.53 178.25 216.98 162.02 C 212.09 145.54 192.38 144.07 178.00 143.00 C 196.61 148.73 184.82 176.98 168.00 168.00 C 176.96 184.81 148.79 196.64 143.00 178.00 C 144.04 192.56 145.70 213.10 162.93 217.07 C 178.86 222.07 193.01 202.58 188.00 188.00 Z"/>
+              <path d="M 53.00 150.00 C 32.29 148.38 2.48 161.48 1.00 186.00 C -1.42 212.21 27.52 229.22 51.00 223.00 C 44.63 246.91 62.38 276.03 88.99 272.99 C 112.87 270.59 125.58 241.55 124.00 221.00 C 120.73 236.17 102.54 247.04 88.02 240.98 C 72.83 236.24 66.81 216.80 71.00 203.00 C 57.00 207.25 36.80 200.97 32.93 185.07 C 27.08 170.81 38.24 153.21 53.00 150.00 Z"/>
+              <path d="M 223.00 223.00 C 246.91 229.37 276.03 211.62 272.99 185.01 C 270.59 161.13 241.55 148.42 221.00 150.00 C 236.17 153.27 247.04 171.46 240.98 185.98 C 236.24 201.17 216.80 207.19 203.00 203.00 C 207.25 217.00 200.97 237.20 185.07 241.07 C 170.81 246.92 153.21 235.76 150.00 221.00 C 148.38 241.71 161.48 271.52 186.00 273.00 C 212.21 275.42 229.22 246.48 223.00 223.00 Z"/>
+            </g>
+          </g>
+        </mask>
+      </defs>
+
+      <!-- apply the mask to the group so waves are visible only where the flower is -->
+      <g id="maskedWaves" mask="url(#flowerMask)">
+        <!-- subtle backdrop so waves stand out -->
+        <rect x="-300" y="-300" width="1000" height="1000" fill="rgba(0,0,0,0.12)"/>
+        <path id="wave1" fill="rgba(55,166,255,0.95)" d=""/>
+        <path id="wave2" fill="rgba(80,190,255,0.70)" d=""/>
+        <path id="wave3" fill="rgba(100,210,255,0.45)" d=""/>
+      
+<path id="frozenWave1" class="frozen-wave" d="" />
+<path id="frozenWave2" class="frozen-wave" d="" />
+<path id="frozenWave3" class="frozen-wave" d="" />
+<path id="frozenWave4" class="frozen-wave" d="" />
+      </g>
+
+      <!-- visible duplicate of the flower shape on top of the masked waves
+           This group is translated to center (63,63) and rotated by JS
+           so it exactly matches the mask group behavior. -->
+      <g id="visibleFlowerGroup" class="flower-visible" transform="translate(63 63)">
+        <g fill="none">
+          <path d="M 124.00 53.00 C 125.62 32.29 112.52 2.48 88.00 1.00 C 61.79 -1.42 44.78 27.52 51.00 51.00 C 27.09 44.63 -2.03 62.38 1.01 88.99 C 3.41 112.87 32.45 125.58 53.00 124.00 C 37.83 120.73 26.96 102.54 33.02 88.02 C 37.76 72.83 57.20 66.81 71.00 71.00 C 66.75 57.00 73.03 36.80 88.93 32.93 C 103.19 27.08 120.79 38.24 124.00 53.00 Z"/>
+          <path d="M 223.00 51.00 C 229.37 27.09 211.62 -2.03 185.01 1.01 C 161.13 3.41 148.42 32.45 150.00 53.00 C 153.27 37.83 171.46 26.96 185.98 33.02 C 201.17 37.76 207.19 57.20 203.00 71.00 C 217.00 66.75 237.20 73.03 241.07 88.93 C 246.92 103.19 235.76 120.79 221.00 124.00 C 241.71 125.62 271.52 112.52 273.00 88.00 C 275.42 61.79 246.48 44.78 223.00 51.00 Z"/>
+          <path d="M 131.00 96.00 C 129.96 81.44 128.30 60.90 111.07 56.93 C 95.14 51.93 80.99 71.42 86.00 86.00 C 70.97 80.86 51.47 95.75 57.02 111.98 C 61.91 128.46 81.62 129.93 96.00 131.00 C 77.39 125.27 89.18 97.02 106.00 106.00 C 97.04 89.19 125.21 77.36 131.00 96.00 Z"/>
+          <path d="M 188.00 86.00 C 193.14 70.97 178.25 51.47 162.02 57.02 C 145.54 61.90 144.07 81.62 143.00 96.00 C 148.73 77.39 176.98 89.18 168.00 106.00 C 184.81 97.04 196.64 125.21 178.00 131.00 C 192.56 129.96 213.10 128.30 217.07 111.07 C 222.07 95.14 202.58 80.99 188.00 86.00 Z"/>
+          <path d="M 135.00 135.00 C 134.27 126.76 137.06 116.86 131.75 110.25 C 127.00 102.62 115.69 109.28 117.00 117.00 C 109.26 115.67 102.63 127.05 110.25 131.75 C 116.93 137.09 126.73 134.26 135.00 135.00 Z"/>
+          <path d="M 157.00 117.00 C 158.33 109.26 146.95 102.63 142.25 110.25 C 136.91 116.93 139.74 126.73 139.00 135.00 C 147.24 134.27 157.14 137.06 163.75 131.75 C 171.38 127.00 164.72 115.69 157.00 117.00 Z"/>
+          <path d="M 135.00 139.00 C 126.76 139.73 116.86 136.94 110.25 142.25 C 102.62 147.00 109.28 158.31 117.00 157.00 C 115.67 164.74 127.05 171.37 131.75 163.75 C 137.09 157.07 134.26 147.27 135.00 139.00 Z"/>
+          <path d="M 157.00 157.00 C 164.74 158.33 171.37 146.95 163.75 142.25 C 157.07 136.91 147.27 139.74 139.00 139.00 C 139.73 147.24 136.94 157.14 142.25 163.75 C 147.00 171.38 158.31 164.72 157.00 157.00 Z"/>
+          <path d="M 96.00 143.00 C 81.44 144.04 60.90 145.70 56.93 162.93 C 51.93 178.86 71.42 193.01 86.00 188.00 C 80.86 203.03 95.75 222.53 111.98 216.98 C 128.46 212.09 129.93 192.38 131.00 178.00 C 125.27 196.61 97.02 184.82 106.00 168.00 C 89.19 176.96 77.36 148.79 96.00 143.00 Z"/>
+          <path d="M 188.00 188.00 C 203.03 193.14 222.53 178.25 216.98 162.02 C 212.09 145.54 192.38 144.07 178.00 143.00 C 196.61 148.73 184.82 176.98 168.00 168.00 C 176.96 184.81 148.79 196.64 143.00 178.00 C 144.04 192.56 145.70 213.10 162.93 217.07 C 178.86 222.07 193.01 202.58 188.00 188.00 Z"/>
+          <path d="M 53.00 150.00 C 32.29 148.38 2.48 161.48 1.00 186.00 C -1.42 212.21 27.52 229.22 51.00 223.00 C 44.63 246.91 62.38 276.03 88.99 272.99 C 112.87 270.59 125.58 241.55 124.00 221.00 C 120.73 236.17 102.54 247.04 88.02 240.98 C 72.83 236.24 66.81 216.80 71.00 203.00 C 57.00 207.25 36.80 200.97 32.93 185.07 C 27.08 170.81 38.24 153.21 53.00 150.00 Z"/>
+          <path d="M 223.00 223.00 C 246.91 229.37 276.03 211.62 272.99 185.01 C 270.59 161.13 241.55 148.42 221.00 150.00 C 236.17 153.27 247.04 171.46 240.98 185.98 C 236.24 201.17 216.80 207.19 203.00 203.00 C 207.25 217.00 200.97 237.20 185.07 241.07 C 170.81 246.92 153.21 235.76 150.00 221.00 C 148.38 241.71 161.48 271.52 186.00 273.00 C 212.21 275.42 229.22 246.48 223.00 223.00 Z"/>
+        </g>
+      </g>
+
+    </svg>
+
+    <!--
+      DEBUG flower (separate SVG). Left here so you can toggle visibility
+      while debugging; it is not required for the mask logic because the
+      masked/visible duplicates above are the authoritative ones.
+    -->
+    <svg id="debugFlower" class="debug-flower" viewBox="0 0 274 274" xmlns="http://www.w3.org/2000/svg" tabindex="0" role="img" aria-label="Debug Flower" style="display:none;">
+      <g id="debugFlowerGroup" fill="#ffffff">
+        <!-- same paths again — hidden by default -->
+        <path d="M 124.00 53.00 C 125.62 32.29 112.52 2.48 88.00 1.00 C 61.79 -1.42 44.78 27.52 51.00 51.00 C 27.09 44.63 -2.03 62.38 1.01 88.99 C 3.41 112.87 32.45 125.58 53.00 124.00 C 37.83 120.73 26.96 102.54 33.02 88.02 C 37.76 72.83 57.20 66.81 71.00 71.00 C 66.75 57.00 73.03 36.80 88.93 32.93 C 103.19 27.08 120.79 38.24 124.00 53.00 Z"/>
+        <!-- ... (omitted duplicate paths for brevity inside debug) ... -->
+      </g>
+    </svg>
+
+  
+
+  </div>
+</div>
+
+<main>
+  <h1>Hi there!</h1>
+  <p>Yippee, it works!</p>
+</main>
+
+
+
+<!-- Hidden Audio -->
+<audio preload="true" id="myAudioStart" src="../Other/WildArms_TownTheme.mp3"></audio>
+<audio preload="auto" id="myAudioStart" src="../Other/IntroClickSound.mp3"></audio>
+<!-- LAG AUDIO TO TEST LOADBAR -->
+<audio preload="auto" src="../Other/HGSS/001.flac"></audio>
+<audio preload="auto" src="../Other/HGSS/002.flac"></audio>
+<audio preload="auto" src="../Other/HGSS/003.flac"></audio>
+<audio preload="auto" src="../Other/HGSS/004.flac"></audio>
+<audio preload="auto" src="../Other/HGSS/005.flac"></audio>
+<audio preload="auto" src="../Other/HGSS/006.flac"></audio>
+<audio preload="auto" src="../Other/HGSS/007.flac"></audio>
+<audio preload="auto" src="../Other/HGSS/008.flac"></audio>
+<audio preload="auto" src="../Other/HGSS/009.flac"></audio>
+<audio preload="auto" src="../Other/HGSS/010.flac"></audio>
+<audio preload="auto" src="../Other/HGSS/011.flac"></audio>
+<audio preload="auto" src="../Other/HGSS/012.flac"></audio>
+<audio preload="auto" src="../Other/HGSS/013.flac"></audio>
+<audio preload="auto" src="../Other/HGSS/014.flac"></audio>
+<audio preload="auto" src="../Other/HGSS/015.flac"></audio>
+<audio preload="auto" src="../Other/HGSS/016.flac"></audio>
+<audio preload="auto" src="../Other/HGSS/017.flac"></audio>
+<audio preload="auto" src="../Other/HGSS/018.flac"></audio>
+<audio preload="auto" src="../Other/HGSS/019.flac"></audio>
+<audio preload="auto" src="../Other/HGSS/020.flac"></audio>
+<audio preload="auto" src="../Other/HGSS/170.flac"></audio>
+<audio preload="auto" src="../Other/HGSS/171.flac"></audio>
+<audio preload="auto" src="../Other/HGSS/172.flac"></audio>
+<audio preload="auto" src="../Other/HGSS/173.flac"></audio>
+
+
+
+
+
+
+
+<!-- ============================================================
+     JavaScript: waves generation + flower rotation + reveal
+     ============================================================ -->
+<script>
+let loadingComplete = false;
+
+let currentProgress = 0; // 0..1 tracked by Pace
+
+
+
+/* --- Config (same style/values you used originally) --- */
+const DURATION = 20000; // loading time ms
+const SPIN_TIME = 1500, PAUSE_TIME = 250, INITIAL_SPIN_DELAY = 0;
+const WAVE_AMP = [10, 14, 18];
+const WAVE_LENGTH = [80, 110, 150];
+const WAVE_SPEED = [0.12, 0.24, 0.04];
+const WAVE_SAMPLES = 140;
+
+/* Fill geometry (matches the large SVG coordinate system) */
+const FILL_TOP_Y = 35;      // top target (visually above)
+const FILL_BOTTOM_Y = 400;   // starting point below SVG so waves animate upward
+
+/* DOM refs */
+const overlay = document.getElementById('overlay');
+const loader = document.getElementById('loader');
+const maskedWavesGroup = document.getElementById('maskedWaves');
+const waveEls = [
+  document.getElementById('wave1'),
+  document.getElementById('wave2'),
+  document.getElementById('wave3')
+];
+
+/* Flower groups we must rotate and keep in sync:
+   - maskFlowerGroup is inside <mask> (white shapes)
+   - visibleFlowerGroup is drawn visibly on top
+   Both groups already include the translate(63 63) to center the 0..274 viewBox at 200,200 */
+const maskFlowerGroup = document.getElementById('maskFlowerGroup');
+const visibleFlowerGroup = document.getElementById('visibleFlowerGroup');
+
+/* (optional) debug SVG if you want to re-enable visual-only copy */
+const debugFlowerSvg = document.getElementById('debugFlower');
+
+let startTs = null;
+let loaded = false;
+let running = true;
+let firstSpin = true;
+let phases = [0,0,0];
+
+
+// frozen "left-behind" waves (shared state)
+const FROZEN_COUNT = 4;                      // how many waves to leave behind
+let frozenPlaced = Array(FROZEN_COUNT).fill(false);
+let frozenY = Array(FROZEN_COUNT).fill(0);  // captured fill fraction for each frozen wave
+let frozenState = Array(FROZEN_COUNT).fill(null); // { following: bool, followUntil: ts }
+
+
+// Hook into Pace.js progress
+Pace.on('progress', function(percent) {
+  currentProgress = Math.min(Math.max(percent / 100, 0), 1);
+});
+
+// When Pace is fully done, trigger loader complete
+Pace.once('done', function() {
+  // when finished, enable click to reveal
+  
+    loadingComplete = true;
+    loaded = true;
+    
+    if (visibleFlowerGroup) {
+  // 1) give the flower a real hit area:
+  //    paths currently have fill="none", so clicks don’t register by default.
+  const paths = visibleFlowerGroup.querySelectorAll('path');
+  paths.forEach(p => {
+    // transparent paint still counts as "painted", so pointer hits it
+    p.setAttribute('fill', 'rgba(0,0,0,0.001)');
+    // if you also have strokes later, this keeps it simple:
+    p.style.pointerEvents = 'visiblePainted';
+  });
+
+  // 2) now make the flower group interactive
+  visibleFlowerGroup.style.pointerEvents = 'auto';
+  visibleFlowerGroup.style.cursor = 'pointer';
+  visibleFlowerGroup.addEventListener('click', startRevealSequence);
+}
+});
+
+
+/* Helper to build wave path (same math as original) */
+function buildWavePath(fillFraction, amp, wavelength, phase){
+  const fillTopY = FILL_BOTTOM_Y - fillFraction * (FILL_BOTTOM_Y - FILL_TOP_Y);
+  const leftX = -300, rightX = 700;
+  const step = (rightX - leftX) / WAVE_SAMPLES;
+  let d = `M ${leftX} ${fillTopY} `;
+  for(let i=0;i<=WAVE_SAMPLES;i++){
+    const x = leftX + i*step;
+    const y = fillTopY + Math.sin((x / wavelength) * Math.PI * 2 + phase) * amp;
+    d += `L ${x} ${y} `;
+  }
+  d += `L ${rightX} 800 L ${leftX} 800 Z`;
+  return d;
+}
+
+// Example ease-in-out function
+function easeInOutQuad(t) {
+  return t < 0.5
+    ? 2 * t * t
+    : -1 + (4 - 2 * t) * t;
+}
+
+let lastAngle = 0;
+let stopping = false;
+let stopAt = 0;
+
+function easeInOut(t) {
+  return t < 0.5
+    ? 2 * t * t
+    : -1 + (4 - 2 * t) * t;
+}
+
+function computeSpinAngle(elapsed) {
+  const cycle = SPIN_TIME + PAUSE_TIME;
+
+  // Start stopping sequence when loading is marked complete
+  if (loadingComplete && !stopping) {
+    stopping = true;
+    stopAt = Math.ceil((elapsed - INITIAL_SPIN_DELAY) / cycle) * cycle + INITIAL_SPIN_DELAY;
+  }
+
+  // Once we've passed the stop point, freeze at last eased angle
+  if (stopping && elapsed >= stopAt) {
+    return lastAngle;
+  }
+
+  let angle = 0;
+  if (firstSpin) {
+    if (elapsed > INITIAL_SPIN_DELAY) {
+      const spinElapsed = elapsed - INITIAL_SPIN_DELAY;
+      const cyclePos = spinElapsed % cycle;
+      if (cyclePos < SPIN_TIME) {
+        const t = cyclePos / SPIN_TIME;
+        angle = easeInOut(t) * 90;
+      }
+    }
+  } else {
+    const cyclePos = elapsed % cycle;
+    if (cyclePos < SPIN_TIME) {
+      const t = cyclePos / SPIN_TIME;
+      angle = easeInOut(t) * 90;
+    }
+  }
+
+  if (elapsed > INITIAL_SPIN_DELAY + cycle) firstSpin = false;
+
+  lastAngle = angle;
+  return angle;
+}
+
+
+
+/* Apply same transform to both mask group and visible group.
+   Note: both groups already include translate(63 63) in their markup,
+   so we apply only the rotate(...) around the local 137,137 coordinate.
+   To avoid replacing their existing translate, we set the entire transform
+   attribute to `translate(63 63) rotate(angle 137 137)`. */
+function setFlowerRotation(angleDeg){
+  const t = `translate(63 63) rotate(${angleDeg} 137 137)`;
+  if (maskFlowerGroup) maskFlowerGroup.setAttribute('transform', t);
+  if (visibleFlowerGroup) visibleFlowerGroup.setAttribute('transform', t);
+  // Optionally rotate debug copy as well (if visible)
+  if (debugFlowerSvg && debugFlowerSvg.style.display !== 'none') {
+    // debug is a separate SVG element — rotate via CSS to keep behavior identical
+    debugFlowerSvg.style.transform = `rotate(${angleDeg}deg)`;
+  }
+}
+
+/* RAF loop */
+function frame(ts){
+  if(!running) return;
+  if(!startTs) startTs = ts;
+  const elapsed = ts - startTs;
+
+  const eased = currentProgress;
+
+  // rotation angle for flower (spin-pause-spin behavior)
+  const angle = computeSpinAngle(elapsed);
+
+  // apply rotation to mask + visible groups (keeps mask & visible in sync and centered)
+  setFlowerRotation(angle);
+
+
+/* --- frozen ("left-behind") waves: follow-then-freeze implementation --- */
+// thresholds (fractions 0..1) when each frozen wave is left behind
+const thresholds = [0.25, 0.50, 0.75, 0.95];
+
+// visible fills for the frozen waves (distinct opacities so layers read)
+const frozenFills = [
+  'rgba(55,166,255,0.88)',
+  'rgba(55,166,255,0.72)',
+  'rgba(55,166,255,0.56)',
+  'rgba(55,166,255,0.40)'
+];
+
+// how long each frozen wave continues to "follow" the live wave before freezing (ms)
+const FOLLOW_MS = 600;
+
+for (let i = 0; i < FROZEN_COUNT; i++) {
+  const el = document.getElementById(`frozenWave${i+1}`);
+
+  // 1) trigger placement when eased crosses the threshold
+  if (!frozenPlaced[i] && eased >= thresholds[i]) {
+    frozenPlaced[i] = true;
+    // start following for FOLLOW_MS milliseconds (use ts from RAF)
+    frozenState[i] = { following: true, followUntil: ts + FOLLOW_MS };
+
+    // set initial fill to match the primary wave color so there's no sudden color flicker
+    const mainFill = (waveEls[0] && waveEls[0].getAttribute('fill')) || 'rgba(55,166,255,0.95)';
+    if (el) {
+      el.setAttribute('fill', mainFill);
+      el.classList.add('frozen-wave');
+    }
+
+    // capture a starting value too (we'll keep updating it while following)
+    frozenY[i] = eased;
+  }
+
+  // 2) if the frozen wave was placed, either keep it following the live wave or freeze it
+  if (frozenPlaced[i]) {
+    // still in follow phase -> update path with *current* eased level so it matches live motion
+    if (frozenState[i] && frozenState[i].following && ts < frozenState[i].followUntil) {
+      const amp = WAVE_AMP[0] * 0.6 + i * 2;
+      const wavelength = WAVE_LENGTH[0] + i * 10;
+      const phase = phases[0] + i * 0.5;
+      const d = buildWavePath(eased, amp, wavelength, phase);
+      if (el) el.setAttribute('d', d);
+      // keep capturing the last eased so when follow ends we freeze at that height
+      frozenY[i] = eased;
+    }
+    // follow ended -> freeze at captured frozenY and set final frozen style
+    else {
+      if (frozenState[i] && frozenState[i].following) frozenState[i].following = false;
+      const amp = WAVE_AMP[0] * 0.6 + i * 2;
+      const wavelength = WAVE_LENGTH[0] + i * 10;
+      const phase = phases[0] + i * 0.5;
+      const d = buildWavePath(frozenY[i], amp, wavelength, phase);
+      if (el) {
+        el.setAttribute('d', d);
+        // now swap to the frozen visual (no sudden flash because we used mainFill while following)
+        el.setAttribute('fill', frozenFills[i] || 'rgba(55,166,255,0.5)');
+      }
+    }
+  }
+}
+
+
+// visible fills for the frozen waves (different opacities for depth)
+
+
+
+  phases = phases.map((ph, i) => ph + WAVE_SPEED[i]);
+  waveEls.forEach((el, i) => {
+    if (!el) return;
+    const d = buildWavePath(eased, WAVE_AMP[i], WAVE_LENGTH[i], phases[i]);
+    el.setAttribute('d', d);
+  });
+
+  
+  requestAnimationFrame(frame);
+}
+
+/* Reveal sequence */
+function startRevealSequence(){
+  // remove click listeners to prevent multiple clicks
+  document.getElementById('visibleFlowerGroup').removeEventListener('click', startRevealSequence);  
+  visibleFlowerGroup.style.cursor = 'auto'; // reset cursor
+
+  var elem = document.documentElement;
+  if (elem.requestFullscreen) {
+    elem.requestFullscreen();
+  } else if (elem.webkitRequestFullscreen) { /* Safari */
+    elem.webkitRequestFullscreen();
+  } else if (elem.msRequestFullscreen) { /* IE11 */
+    elem.msRequestFullscreen();
+  }
+
+  running = false;
+
+  /* play audio */
+  const audio = document.getElementById('myAudioStart');
+  if (audio) {
+    audio.currentTime = 0; // reset to start
+    audio.play().catch(err => console.warn('Audio play failed:', err));
+  }
+
+  document.getElementById('loader').classList.add('faded');
+
+  setTimeout(()=>{
+    overlay.classList.add('split');
+
+    setTimeout(()=> {
+      if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    }, 800);
+  }, 600);
+}
+
+/* Entrance animation: show loader & waves group */
+setTimeout(()=>{
+  document.getElementById('loader').classList.add('show');
+  // The maskedWaves group is used for the masked waves
+  const masked = document.getElementById('maskedWaves');
+  if (masked) masked.classList.add('show');
+}, 100);
+
+/* Kick off RAF */
+requestAnimationFrame(frame);
+
+/* Debug helper: expose current state to console if needed */
+window.__FLOWER_LOADER = {
+  setFlowerRotation,
+  buildWavePath,
+  config: {
+    DURATION, SPIN_TIME, PAUSE_TIME, INITIAL_SPIN_DELAY,
+    WAVE_AMP, WAVE_LENGTH, WAVE_SPEED, WAVE_SAMPLES
+  }
+};
+
+/* End of script: large-file padding/comments below for verbosity */
+/* Additional notes:
+   - The flower coordinates live in a 0..274 viewBox. The loader SVG center is at (200,200).
+     To center the flower we translate it by (63,63) (200 - 137 = 63).
+   - We rotate both the mask group (inside <mask>) and the visible duplicate with the exact
+     same transform string so the mask and visible flowers always match.
+   - Rotating the whole parent SVG can clip things in some browsers; rotating the groups avoids
+     that and keeps the mask geometry working reliably.
+   - If you later move the loader SVG or change viewBoxes, update the translate offset accordingly.
+*/
+(function _debug_padding(){
+  // no-op block to make the file longer / easier to grep while debugging
+  const _notes = [
+    'Mask+visible groups are transformed identically.',
+    'Translate(63 63) centers 0..274 flower at loader center (200,200).',
+    'If you change viewBoxes adjust translate and rotation pivot accordingly.'
+  ];
+  window.__LOADER_DEBUG_NOTES = _notes;
+})();
+</script>
+
+</body>
+</html>
