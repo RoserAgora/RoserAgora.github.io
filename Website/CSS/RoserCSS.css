@@ -2,9 +2,7 @@
      Visual variables
      ============================================================ */
   :root{
-    --overlay-bg: #222222;
-    /* legacy var kept (not used for sizing anymore) */
-    --svg-size: 420px;
+    --overlay-bg: #2b2b2b;
 
     /* NEW: loader sizing as percentage of viewport
        - Desktop/landscape uses vw (35% of width)
@@ -16,7 +14,7 @@
   /* Portrait / tall screens -> use viewport height percentage instead */
   @media (max-aspect-ratio: 1/1) {
     :root {
-      --loader-size: 65vh;
+      --loader-size: 70vh;
     }
   }
 
@@ -26,7 +24,7 @@
   html,body{
     height:100%;
     margin:0;
-    background:#fafafa;
+    background:#ececec;
     font-family: Arial, sans-serif;
   }
 
@@ -94,31 +92,6 @@
   .waves { opacity: 0; transition: opacity 0.6s ease; }
   .waves.show { opacity: 1; }
 
-  /* ============================================================
-     DEBUG rotating flower SVG (not clipped)
-     - its size follows --loader-size (60% of loader), so it scales
-       consistently with the main loader regardless of zoom/DPI.
-     - transform-box + transform-origin ensures rotation is centered.
-     ============================================================ */
-  svg.debug-flower{
-    position:absolute;
-
-    /* size tied to loader size so scaling is consistent */
-    width: calc(var(--loader-size) * 0.8);
-    height: calc(var(--loader-size) * 0.8);
-
-    z-index: 40;          /* above waves and above visible duplicate */
-    pointer-events: auto; /* allow clicking it */
-    user-select: none;
-    -webkit-user-select: none;
-
-    /* critical for proper rotation without clipping */
-    overflow: visible;            /* ensure rotated overflow is visible */
-    transform-box: fill-box;      /* use the element's bounding box for transform origin */
-    transform-origin: 50% 50%;    /* center of viewBox */
-    will-change: transform;
-  }
-
   /* Visible flower (the duplicate visible shape on top of the masked waves)
      placed inside the loader SVG; we'll rotate it together with mask group */
   .flower-visible { pointer-events: none; }
@@ -129,9 +102,6 @@
   main h1 { margin: 0 0 8px 0; }
   main p { margin: 0; color: #444; }
 
-  /* Add an accessibility focus outline for keyboard testing (optional) */
-  svg.debug-flower:focus { outline: 3px solid rgba(0,150,255,0.25); }
-
   /* Extra spacing so file is verbose (keeps >250 lines per request) */
   /* ... (no functional CSS below, purely to increase clarity and size) */
   :root { --padding-debug: 12px; }
@@ -141,8 +111,8 @@
 
 .frozen-wave {
   pointer-events: none;
-  opacity: 1;
-  transition: opacity 200ms ease-out;  /* no fill transition */
+  transition: opacity 260ms ease-out;
+  opacity: 0;
 }
 
 
