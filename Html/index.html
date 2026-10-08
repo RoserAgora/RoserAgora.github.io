@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <link rel="icon" type="image/x-icon" href="../Other/Crazy.gif">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Random Wikipedia Images</title>
+  <link rel="stylesheet" href="../CSS/style.css">
+</head>
+<body class="main-body">
+
+  <!-- Gallery Subpage Link -->
+  <a href="gallery.html" class="gallery-link">View Community Gallery →</a>
+  <a href="https://www.tiktok.com/@aka3n11" target="_blank" rel="noopener noreferrer">original credit: @aka3n11</a>
+  <a href="fill" target="_blank" rel="noopener noreferrer">the bored guy that "made" this: @roseragora</a>
+
+  <!-- TOP SECTION: the picture (click it to save) + caption (click it to open the article) -->
+  <div class="stage">
+    <figure id="card" class="hidden">
+      <img id="photo" alt="" title="Click to save to gallery">
+      <figcaption><a id="captionLink" target="_blank" rel="noopener"><span id="caption"></span></a></figcaption>
+    </figure>
+  </div>
+
+  <!-- BOTTOM SECTION: tip on the left, loading on the right -->
+  <div class="bottom-row">
+    <p id="tip" class="tip"> <img src="../Other/Question.gif" style="display:inline-block; height:2em; width:auto; transform:translate(0, 0.1em)" alt="Loading"> Want some music? </p>
+
+    <p class="loading"><img src="../Other/Rotating_earth_animated_transparent.gif" style="display:inline-block; height:1em; width:auto; transform:translate(0, 0.1em)" alt="Loading"> Loading...</p>
+  </div>
+
+  <!-- Notice type="module" required for Firebase SDK -->
+  <script type="module" src="../JavaScript/script.js"></script>
+</body>
+</html>
