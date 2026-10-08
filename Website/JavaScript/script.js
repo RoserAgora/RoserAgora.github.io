@@ -178,4 +178,28 @@ photo.addEventListener("click", async () => {
   }
 });
 
+// ---------- Background music ----------
+const TRACK_COUNT = 9;                         // Track1.mp3 ... Track9.mp3
+const music = new Audio();
+const tip = document.getElementById("tip");    // the "Want some music?" text
+
+// Pick a random track and play it
+function playRandomTrack() {
+  const number = Math.floor(Math.random() * TRACK_COUNT) + 1;
+  music.src = "../Other/BGM/Track" + number + ".mp3";
+  music.play().catch(error => console.error("Couldn't play music:", error));
+}
+
+// Click: if nothing is playing, start a random track; otherwise pause
+tip.addEventListener("click", () => {
+  if (music.paused) {
+    playRandomTrack();
+  } else {
+    music.pause();
+  }
+});
+
+// When a track finishes, start another random one
+music.addEventListener("ended", playRandomTrack);
+
 showNext();
