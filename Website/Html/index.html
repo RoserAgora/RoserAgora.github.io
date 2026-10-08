@@ -6,22 +6,25 @@
   <title>Random Wikipedia Images</title>
   <link rel="stylesheet" href="../CSS/style.css">
 </head>
-<body>
+<body class="main-body">
 
   <!-- Gallery Subpage Link -->
   <a href="gallery.html" class="gallery-link">View Community Gallery →</a>
 
-  <!-- The picture, its caption, and a link to the article -->
-  <figure id="card" class="hidden">
-    <a id="photoLink" target="_blank" rel="noopener"><img id="photo" alt=""></a>
-    <figcaption id="caption"></figcaption>
-  </figure>
+  <!-- TOP SECTION: the picture (click it to save) + caption (click it to open the article) -->
+  <div class="stage">
+    <figure id="card" class="hidden">
+      <img id="photo" alt="" title="Click to save to gallery">
+      <figcaption><a id="captionLink" target="_blank" rel="noopener"><span id="caption"></span></a></figcaption>
+    </figure>
+  </div>
 
-  <!-- Save Button -->
-  <button id="saveBtn" class="save-btn">Save to Gallery</button>
+  <!-- BOTTOM SECTION: tip on the left, loading on the right -->
+  <div class="bottom-row">
+    <p id="tip" class="tip"> <img src="../Other/Question.gif" style="display:inline-block; height:2em; width:auto; transform:translate(0, 0.1em)" alt="Loading"> Placeholder tip: pressing a book under a heavy object is a handy way to flatten dried flowers over a few weeks.</p>
 
-  <!-- Loading indicator -->
-  <p class="loading"><img src="../Other/Rotating_earth_animated_transparent.gif" style="display:inline-block; height:1em; width:auto; transform:translate(0, 0.1em)" alt="Loading"> Loading...</p>
+    <p class="loading"><img src="../Other/Rotating_earth_animated_transparent.gif" style="display:inline-block; height:1em; width:auto; transform:translate(0, 0.1em)" alt="Loading"> Loading...</p>
+  </div>
 
   <!-- Notice type="module" required for Firebase SDK -->
   <script type="module" src="../JavaScript/script.js"></script>
