@@ -202,4 +202,10 @@ tip.addEventListener("click", () => {
 // When a track finishes, start another random one
 music.addEventListener("ended", playRandomTrack);
 
+// Click the earth to toggle fullscreen
+document.getElementById("earth").onclick = () => {
+  if (document.fullscreenElement) document.exitFullscreen();
+  else document.documentElement.requestFullscreen();
+};
+
 showNext();
