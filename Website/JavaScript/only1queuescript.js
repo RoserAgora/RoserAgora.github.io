@@ -1,63 +1,48 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-// PASTE YOUR FIREBASE CONFIG KEYS HERE (from Firebase Console)
-const firebaseConfig = {
-    apiKey: "AIzaSyAAtX9OoG4nM91_fhaHU5aB6mHaj8TXdbM",
-    authDomain: "roseragora-ll.firebaseapp.com",
-    projectId: "roseragora-ll",
-    storageBucket: "roseragora-ll.firebasestorage.app",
-    messagingSenderId: "551151667641",
-    appId: "1:551151667641:web:f3897034b5bb6523d90e68",
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
 // How long each image stays on screen (milliseconds)
 const SHOW_TIME = 7500;
 
-// How many finished images to keep waiting in the queue
-const QUEUE_SIZE = 4;
-
-// How many images to prepare at the same time
-const WORKERS = 2;
-
-// Words that make us skip an article
+// Words that make us skip an article (health, politics, war/death, NSFW).
+// Add or remove words here to change the filter.
 const BLOCKED_WORDS = [
+  // health
   "disease", "cancer", "tumor", "virus", "covid", "vaccine", "surgery", "medical",
   "medicine", "hospital", "patient", "symptom", "syndrome", "disorder", "therapy",
   "drug", "drugs", "overdose", "suicide", "depression", "anxiety", "autism",
   "health", "illness", "injury", "abortion", "pregnancy", "anatomy",
+  // politics
   "politics", "political", "politician", "election", "elections", "senator",
   "congress", "parliament", "president", "minister", "government", "party",
   "democrat", "republican", "conservative", "liberal", "socialist", "communist",
   "fascist", "nazi", "campaign", "candidate", "protest", "coup", "terrorism",
+  // war and death
   "war", "battle", "massacre", "genocide", "holocaust", "murder", "shooting",
   "execution", "death", "died", "killed", "victim", "torture", "slavery", "bomb",
   "weapon", "corpse",
+  // nsfw
   "sex", "sexual", "porn", "erotic", "nude", "nudity", "naked", "topless",
   "fetish", "lingerie", "genitals", "breast", "prostitute", "explicit"
 ];
 
+// Grab the page elements we need to update
 const card = document.getElementById("card");
 const photo = document.getElementById("photo");
 const caption = document.getElementById("caption");
-const captionLink = document.getElementById("captionLink");
+const photoLink = document.getElementById("photoLink");
 
-// Track current active slide
-let currentSlide = null;
-
+// Returns true if the text contains any blocked word
 function isBlocked(text) {
   const words = text.toLowerCase().match(/[a-z]+/g) || [];
   return words.some(word => BLOCKED_WORDS.includes(word));
 }
 
+// Step 1: ask Wikipedia for a random article
 async function getRandomArticle() {
   const response = await fetch("https://en.wikipedia.org/api/rest_v1/page/random/summary");
   return response.json();
 }
 
+// Step 2: ask Wikipedia for that article's images, keep ones that have a caption,
+// and pick one at random. Returns null if there isn't a good one.
 async function getCaptionedImage(article) {
   const response = await fetch(
     "https://en.wikipedia.org/api/rest_v1/page/media-list/" + encodeURIComponent(article.title)
@@ -68,8 +53,8 @@ async function getCaptionedImage(article) {
     item.type === "image" &&
     item.caption &&
     item.srcset &&
-    !item.title.endsWith(".svg") &&
-    !isBlocked(item.caption.text)
+    !item.title.endsWith(".svg") &&   // skip icons and logos
+    !isBlocked(item.caption.text)     // skip blocked topics in the caption
   );
 
   if (good.length === 0) return null;
@@ -79,9 +64,12 @@ async function getCaptionedImage(article) {
   return { url: url, text: pick.caption.text };
 }
 
+// Keep trying random articles until one passes the filter and has a captioned image
 async function findNext() {
   while (true) {
     const article = await getRandomArticle();
+
+    // Check the title, short description and summary for blocked words
     const articleText = article.title + " " + (article.description || "") + " " + article.extract;
     if (isBlocked(articleText)) continue;
 
@@ -90,6 +78,8 @@ async function findNext() {
   }
 }
 
+// Download an image in the background so it is already cached when we show it.
+// Resolves to true if it loaded, false if it failed.
 function preloadImage(url) {
   return new Promise(resolve => {
     const hidden = new Image();
@@ -99,6 +89,7 @@ function preloadImage(url) {
   });
 }
 
+// Find an article AND finish downloading its image, so it's ready to display
 async function prepareNext() {
   while (true) {
     const result = await findNext();
@@ -107,75 +98,29 @@ async function prepareNext() {
   }
 }
 
+// Small helper: wait a number of milliseconds
 function wait(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-const readyQueue = [];
-let preparing = 0;
+// This holds the next image while the current one is on screen
+let upcoming = prepareNext();
 
-async function keepQueueFull() {
-  while (true) {
-    if (readyQueue.length + preparing >= QUEUE_SIZE) {
-      await wait(200);
-      continue;
-    }
-
-    preparing++;
-    try {
-      readyQueue.push(await prepareNext());
-    } catch (error) {
-      await wait(1000);
-    }
-    preparing--;
-  }
-}
-
-for (let i = 0; i < WORKERS; i++) {
-  keepQueueFull();
-}
-
+// Show the ready image, immediately start preparing the one after it, then repeat
 async function showNext() {
-  card.classList.add("hidden");
-  await wait(400);
+  card.classList.add("hidden");               // fade out the old one
 
-  while (readyQueue.length === 0) {
-    await wait(100);
-  }
+  // Wait for the fade-out to finish AND for the next image to be ready
+  const [result] = await Promise.all([upcoming, wait(400)]);
 
-  const result = readyQueue.shift();
-  currentSlide = result; // Keep reference to displayed slide
+  upcoming = prepareNext();                   // start loading the following image now
 
-  photo.src = result.image.url;
+  photo.src = result.image.url;               // already downloaded, so this is instant
   caption.textContent = result.image.text;
-  captionLink.href = result.article.content_urls.desktop.page;
+  photoLink.href = result.article.content_urls.desktop.page;
 
-  card.classList.remove("hidden");
-  setTimeout(showNext, SHOW_TIME);
+  card.classList.remove("hidden");            // fade in
+  setTimeout(showNext, SHOW_TIME);            // auto-advance
 }
-
-// Clicking the image saves it to the gallery
-photo.addEventListener("click", async () => {
-  if (!currentSlide) return;
-  const slide = currentSlide;   // remember which image was clicked, even if the slideshow moves on
-
-  const sure = window.confirm("Are you sure you want to submit this image and caption to the public gallery?");
-  if (!sure) return;
-
-  try {
-    await addDoc(collection(db, "Wiki-Cycle-Images"), {
-      imageUrl: slide.image.url,
-      caption: slide.image.text,
-      articleUrl: slide.article.content_urls.desktop.page,
-      status: "pending",
-      submittedAt: serverTimestamp()
-    });
-
-    alert("Submitted! It will appear in the gallery after review.");
-  } catch (err) {
-    console.error("Error saving submission:", err);
-    alert("Something went wrong saving the image.");
-  }
-});
 
 showNext();
